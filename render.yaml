@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cafelab-backend
+    runtime: docker
+    plan: free
+    branch: release/sprint-3
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /swagger-ui/index.html
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JAVA_OPTS
+        value: "-Xms128m -Xmx300m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Xss512k"
