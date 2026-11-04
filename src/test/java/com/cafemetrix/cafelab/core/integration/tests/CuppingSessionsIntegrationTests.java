@@ -37,7 +37,7 @@ public class CuppingSessionsIntegrationTests {
         // Facades
         currentProfileIdResolver = Mockito.mock(CurrentProfileIdResolver.class);
 
-        cuppingSessionsController = new CuppingSessionsController(cuppingSessionCommandService, cuppingSessionQueryService, currentProfileIdResolver);
+        cuppingSessionsController = new CuppingSessionsController(cuppingSessionCommandService, cuppingSessionQueryService, currentProfileIdResolver, Mockito.mock(com.cafemetrix.cafelab.production.interfaces.acl.CoffeeproductionContextFacade.class));
 
     }
 
@@ -54,7 +54,9 @@ public class CuppingSessionsIntegrationTests {
                 dateCreation,
                 true,
                 "Aroma y sabor frutales, acidez brillante",
-                "Sabor dulce y cuerpo medio, con notas de frutas cítricas y un final limpio"
+                "Sabor dulce y cuerpo medio, con notas de frutas cítricas y un final limpio",
+                null,
+                null
         );
 
         CuppingSession mockCuppingSession = Mockito.mock(CuppingSession.class);

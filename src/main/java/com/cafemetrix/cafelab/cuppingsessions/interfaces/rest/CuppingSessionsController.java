@@ -2,6 +2,7 @@ package com.cafemetrix.cafelab.cuppingsessions.interfaces.rest;
 
 import com.cafemetrix.cafelab.cuppingsessions.domain.exceptions.CuppingSessionNotFoundException;
 import com.cafemetrix.cafelab.cuppingsessions.domain.model.queries.GetCuppingSessionByIdForUserQuery;
+import com.cafemetrix.cafelab.cuppingsessions.domain.model.queries.GetCuppingSessionsByCoffeeLotIdQuery;
 import com.cafemetrix.cafelab.cuppingsessions.domain.model.queries.GetCuppingSessionsByUserIdQuery;
 import com.cafemetrix.cafelab.cuppingsessions.domain.services.CuppingSessionCommandService;
 import com.cafemetrix.cafelab.cuppingsessions.domain.services.CuppingSessionQueryService;
@@ -12,6 +13,7 @@ import com.cafemetrix.cafelab.cuppingsessions.interfaces.rest.transform.CreateCu
 import com.cafemetrix.cafelab.cuppingsessions.interfaces.rest.transform.CuppingSessionResourceFromEntityAssembler;
 import com.cafemetrix.cafelab.cuppingsessions.interfaces.rest.transform.UpdateCuppingSessionCommandFromResourceAssembler;
 import com.cafemetrix.cafelab.iam.infrastructure.authorization.sfs.support.CurrentProfileIdResolver;
+import com.cafemetrix.cafelab.production.interfaces.acl.CoffeeproductionContextFacade;
 import com.cafemetrix.cafelab.shared.interfaces.rest.resources.MessageResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,14 +32,26 @@ public class CuppingSessionsController {
     private final CuppingSessionCommandService commandService;
     private final CuppingSessionQueryService queryService;
     private final CurrentProfileIdResolver currentProfileIdResolver;
+    private final CoffeeproductionContextFacade productionFacade;
 
     public CuppingSessionsController(
             CuppingSessionCommandService commandService,
             CuppingSessionQueryService queryService,
-            CurrentProfileIdResolver currentProfileIdResolver) {
+            CurrentProfileIdResolver currentProfileIdResolver,
+            CoffeeproductionContextFacade productionFacade) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.currentProfileIdResolver = currentProfileIdResolver;
+        this.productionFacade = productionFacade;
+    }
+
+    private boolean validAssociation(Long userId, Long lotId, Long profileId) {
+        if (lotId != null && productionFacade.getCoffeeLotById(lotId)
+                .filter(lot -> userId.equals(lot.getUserId())).isEmpty()) return false;
+        if (profileId != null) return productionFacade.getRoastProfileById(profileId)
+                .filter(profile -> userId.equals(profile.getUserId()) && lotId != null
+                        && lotId.equals(profile.getCoffeeLotId())).isPresent();
+        return true;
     }
 
     private Optional<Long> resolveCurrentUserId() {
@@ -58,6 +72,9 @@ public class CuppingSessionsController {
         Optional<Long> userIdOpt = resolveCurrentUserId();
         if (userIdOpt.isEmpty()) {
             return unauthorized("Usuario no autenticado o perfil no encontrado");
+        }
+        if (!validAssociation(userIdOpt.get(), resource.coffeeLotId(), resource.roastProfileId())) {
+            return forbidden("Lote o perfil de tueste no disponible para este usuario");
         }
         try {
             var cmd = CreateCuppingSessionCommandFromResourceAssembler.toCommand(userIdOpt.get(), resource);
@@ -84,6 +101,21 @@ public class CuppingSessionsController {
                 list.stream().map(CuppingSessionResourceFromEntityAssembler::toResource).collect(Collectors.toList()));
     }
 
+    @GetMapping("/lot/{coffeeLotId}")
+    @Operation(summary = "Listar sesiones del perfil asociadas a un lote de café")
+    public ResponseEntity<?> listByCoffeeLot(@PathVariable Long coffeeLotId) {
+        Optional<Long> userIdOpt = resolveCurrentUserId();
+        if (userIdOpt.isEmpty()) {
+            return unauthorized("Usuario no autenticado o perfil no encontrado");
+        }
+        if (!validAssociation(userIdOpt.get(), coffeeLotId, null)) {
+            return forbidden("Lote no disponible para este usuario");
+        }
+        var list = queryService.handle(new GetCuppingSessionsByCoffeeLotIdQuery(userIdOpt.get(), coffeeLotId));
+        return ResponseEntity.ok(
+                list.stream().map(CuppingSessionResourceFromEntityAssembler::toResource).collect(Collectors.toList()));
+    }
+
     @GetMapping("/{sessionId}")
     @Operation(summary = "Obtener sesión por id")
     public ResponseEntity<?> getById(@PathVariable Long sessionId) {
@@ -105,6 +137,9 @@ public class CuppingSessionsController {
         Optional<Long> userIdOpt = resolveCurrentUserId();
         if (userIdOpt.isEmpty()) {
             return unauthorized("Usuario no autenticado o perfil no encontrado");
+        }
+        if (!validAssociation(userIdOpt.get(), resource.coffeeLotId(), resource.roastProfileId())) {
+            return forbidden("Lote o perfil de tueste no disponible para este usuario");
         }
         try {
             var cmd =
