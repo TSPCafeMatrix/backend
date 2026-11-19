@@ -1,5 +1,9 @@
 package com.cafemetrix.cafelab.bdd;
 
+import com.cafemetrix.cafelab.brewmethods.domain.services.BrewMethodCommandService;
+import com.cafemetrix.cafelab.brewmethods.domain.services.BrewMethodQueryService;
+import com.cafemetrix.cafelab.brewmethods.interfaces.rest.BrewMethodsController;
+import com.cafemetrix.cafelab.brewmethods.interfaces.rest.BrewMethodsExceptionHandler;
 import com.cafemetrix.cafelab.beverages.domain.services.BeverageCommandService;
 import com.cafemetrix.cafelab.beverages.domain.services.BeverageQueryService;
 import com.cafemetrix.cafelab.beverages.interfaces.rest.BeveragesController;
@@ -60,7 +64,8 @@ import org.springframework.context.annotation.Import;
         InventoryEntriesController.class,
         ProductionCostRecordsController.class,
         ProfilesController.class,
-        BeveragesController.class
+        BeveragesController.class,
+        BrewMethodsController.class
     },
     excludeAutoConfiguration = {SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class}
 )
@@ -74,7 +79,8 @@ import org.springframework.context.annotation.Import;
     ManagementExceptionHandler.class,
     PreparationExceptionHandler.class,
     ProfilesExceptionHandler.class,
-    BeveragesExceptionHandler.class
+    BeveragesExceptionHandler.class,
+    BrewMethodsExceptionHandler.class
 })
 public class CucumberSpringConfiguration {
 
@@ -122,4 +128,10 @@ public class CucumberSpringConfiguration {
 
     @MockBean
     public BeverageQueryService beverageQueryService;
+
+    @MockBean
+    public BrewMethodCommandService brewMethodCommandService;
+
+    @MockBean
+    public BrewMethodQueryService brewMethodQueryService;
 }

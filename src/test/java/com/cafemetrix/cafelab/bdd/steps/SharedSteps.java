@@ -1,5 +1,7 @@
 package com.cafemetrix.cafelab.bdd.steps;
 
+import com.cafemetrix.cafelab.brewmethods.domain.services.BrewMethodCommandService;
+import com.cafemetrix.cafelab.brewmethods.domain.services.BrewMethodQueryService;
 import com.cafemetrix.cafelab.beverages.domain.services.BeverageCommandService;
 import com.cafemetrix.cafelab.beverages.domain.services.BeverageQueryService;
 import com.cafemetrix.cafelab.calibrations.domain.services.GrindCalibrationCommandService;
@@ -71,6 +73,12 @@ public class SharedSteps {
 
     @Autowired
     public BeverageQueryService beverageQueryService;
+
+    @Autowired
+    public BrewMethodCommandService brewMethodCommandService;
+
+    @Autowired
+    public BrewMethodQueryService brewMethodQueryService;
 
     ResultActions lastResult;
 
