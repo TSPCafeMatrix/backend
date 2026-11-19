@@ -1,5 +1,9 @@
 package com.cafemetrix.cafelab.bdd;
 
+import com.cafemetrix.cafelab.beverages.domain.services.BeverageCommandService;
+import com.cafemetrix.cafelab.beverages.domain.services.BeverageQueryService;
+import com.cafemetrix.cafelab.beverages.interfaces.rest.BeveragesController;
+import com.cafemetrix.cafelab.beverages.interfaces.rest.BeveragesExceptionHandler;
 import com.cafemetrix.cafelab.calibrations.domain.services.GrindCalibrationCommandService;
 import com.cafemetrix.cafelab.calibrations.domain.services.GrindCalibrationQueryService;
 import com.cafemetrix.cafelab.calibrations.interfaces.rest.CalibrationsController;
@@ -55,7 +59,8 @@ import org.springframework.context.annotation.Import;
         PortfoliosController.class,
         InventoryEntriesController.class,
         ProductionCostRecordsController.class,
-        ProfilesController.class
+        ProfilesController.class,
+        BeveragesController.class
     },
     excludeAutoConfiguration = {SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class}
 )
@@ -68,7 +73,8 @@ import org.springframework.context.annotation.Import;
     DefectsExceptionHandler.class,
     ManagementExceptionHandler.class,
     PreparationExceptionHandler.class,
-    ProfilesExceptionHandler.class
+    ProfilesExceptionHandler.class,
+    BeveragesExceptionHandler.class
 })
 public class CucumberSpringConfiguration {
 
@@ -110,4 +116,10 @@ public class CucumberSpringConfiguration {
 
     @MockBean
     public ProfileQueryService profileQueryService;
+
+    @MockBean
+    public BeverageCommandService beverageCommandService;
+
+    @MockBean
+    public BeverageQueryService beverageQueryService;
 }
